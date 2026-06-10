@@ -1,0 +1,5 @@
+# Reemplazá "tu-dominio.com" por tu dominio real al publicar. / Replace "tu-dominio.com" with your real domain when you publish.
+User-agent: *
+Allow: /
+Disallow: /cv/
+Sitemap: https://tu-dominio.com/sitemap.xml

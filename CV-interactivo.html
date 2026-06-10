@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<script>/* one-time reset of legacy auto-saved prefs (old code persisted theme/lang on every load) so device detection works again */try{if(localStorage.getItem('prefv')!=='2'){localStorage.removeItem('theme');localStorage.removeItem('lang');localStorage.setItem('prefv','2');}}catch(e){}/* theme: saved choice first, else the device (OS) preference */try{var t=localStorage.getItem('theme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)t='dark';if(t==='dark')document.documentElement.setAttribute('data-theme','dark');else if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- TEMPLATE: el título y el favicon son estáticos. El contenido del CV sale del objeto DATA (más abajo) y la identidad de config.js. -->
+<title>AD | Curriculum</title>
+<!-- Favicon "AD" — archivos reales (bookmarks, home screen, etc.) -->
+<link rel="icon" href="icons/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="canonical" href="https://tu-dominio.com/CV-interactivo.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink:#111; --accent:#2E4BAF; --mid:#666; --rule:#DDD;
+    --sidebar-bg:#F3F3F3; --tag-bg:#E4E4E4; --dark:#181818;
+    --page-bg:#dcdcdc; --sheet-bg:#fff; --company-color:#555;
+    --bullets-color:#2a2a2a; --chip-bg:#fff; --chip-shadow:rgba(0,0,0,0.18);
+    --toggle-icon:#333;
+  }
+  html[data-theme="dark"] {
+    --ink:#e8e8e8; --accent:#5e76ff; --mid:#999; --rule:#333;
+    --sidebar-bg:#1e1e24; --tag-bg:#2a2a32; --dark:#0d0d12;
+    --page-bg:#34373f; --sheet-bg:#2d3037; --company-color:#aaa;
+    --bullets-color:#ccc; --chip-bg:#242430; --chip-shadow:rgba(0,0,0,0.5);
+    --toggle-icon:#e8e8e8;
+  }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family:'DM Sans',sans-serif; color:var(--ink);
+    background:var(--page-bg); line-height:1.5;
+    padding:60px 16px 80px;   /* top gap so the floating controls sit above the sheet, not over the header text */
+    display:flex; justify-content:center;
+    transition:background .25s ease, color .25s ease;
+  }
+
+  /* ---- Language switch (floating) ---- */
+  /* ---- Theme toggle (floating, beside lang switch) ---- */
+  .theme-toggle {
+    position:fixed; top:14px; right:116px; z-index:50;
+    background:var(--chip-bg); border-radius:999px;
+    box-shadow:0 4px 14px var(--chip-shadow);
+    border:none; cursor:pointer;
+    width:36px; height:36px;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .25s ease, transform .12s ease;
+  }
+  .theme-toggle:hover { transform:scale(1.08); }
+  .theme-toggle svg { width:16px; height:16px; }
+
+  /* ---- Download PDF button (floating, beside the theme toggle) ---- */
+  .dl-toggle {
+    position:fixed; top:14px; right:160px; z-index:50;
+    background:var(--chip-bg); border-radius:999px;
+    box-shadow:0 4px 14px var(--chip-shadow);
+    border:none; cursor:pointer;
+    width:36px; height:36px;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .25s ease, transform .12s ease;
+  }
+  .dl-toggle:hover { transform:scale(1.08); }
+  .dl-toggle svg { width:17px; height:17px; color:var(--toggle-icon); }
+
+  .lang-switch {
+    position:fixed; top:14px; right:14px; z-index:50;
+    display:flex; background:var(--chip-bg); border-radius:999px;
+    box-shadow:0 4px 14px var(--chip-shadow); padding:3px;
+    font-family:'DM Mono',monospace; font-size:12px;
+    transition:background .25s ease;
+  }
+  .lang-switch button {
+    border:none; background:transparent; cursor:pointer;
+    padding:7px 14px; border-radius:999px; color:var(--mid);
+    font-family:inherit; font-weight:500; transition:all .22s ease;
+  }
+  .lang-switch button.active { background:var(--accent); color:#fff; }
+
+  /* ---- Floating name + photo (follows scroll like the lang switch) ---- */
+  .name-float {
+    position:fixed; top:14px; left:14px; z-index:50;
+    display:flex; align-items:center; gap:9px;
+    background:var(--chip-bg); border-radius:999px;
+    box-shadow:0 4px 14px var(--chip-shadow); padding:4px 14px 4px 4px;
+    transition:background .25s ease;
+    opacity:0; transform:translateY(-12px); pointer-events:none;
+    transition:opacity .3s ease, transform .3s ease;
+  }
+  .name-float.visible { opacity:1; transform:none; }
+  .name-float img { width:32px; height:32px; border-radius:50%; object-fit:cover; display:block; }
+  .name-float .nf-name {
+    font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
+    color:var(--ink); white-space:nowrap; letter-spacing:.01em;
+  }
+
+  .sheet {
+    width:100%; max-width:794px; background:var(--sheet-bg);
+    transition:background .25s ease;
+    box-shadow:0 10px 30px rgba(0,0,0,0.14);
+    display:grid; grid-template-columns:230px 1fr;
+    grid-template-rows:auto 1fr;
+    overflow:hidden;
+  }
+
+  /* ---- HEADER ---- */
+  .header { grid-column:1/-1; display:grid; grid-template-columns:230px 1fr; background:var(--dark); }
+  .header-left {
+    background:var(--accent); padding:20px 16px; display:flex; align-items:center; gap:14px;
+    position:relative; overflow:hidden;
+  }
+  .header-left::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.07);}
+  .header-left::after{content:'';position:absolute;bottom:-24px;left:-24px;width:76px;height:76px;border-radius:50%;background:rgba(0,0,0,.13);}
+  .photo-outer{position:relative;width:112px;height:112px;flex-shrink:0;z-index:1;cursor:pointer;transition:transform .25s ease;}
+  .photo-outer:hover{transform:scale(1.08);}
+  .photo-outer::before{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.35);}
+  .photo-outer::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:4px solid transparent;border-top-color:rgba(255,255,255,.75);border-right-color:rgba(255,255,255,.75);transform:rotate(20deg);}
+  .photo-outer.spin::after{animation:spinArc 1.1s ease-out;}
+  @keyframes spinArc{from{transform:rotate(20deg);}to{transform:rotate(380deg);}}
+  .photo-wrap{position:absolute;inset:6px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);}
+  .photo-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+  .name-block{position:relative;z-index:1;}
+  .name-block .label{font-size:8px;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px;}
+  .name-first{font-size:26px;font-weight:300;line-height:1;color:#fff;}
+  .name-last{font-size:26px;font-weight:700;line-height:1.05;color:#fff;}
+  .header-right{padding:18px 22px;display:flex;flex-direction:column;justify-content:center;gap:9px;}
+  .header-right .title{font-size:14.5px;font-weight:600;color:#fff;line-height:1.35;}
+  .header-right .summary{font-size:11.5px;color:rgba(255,255,255,.92);line-height:1.6;}
+
+  /* dark mode: title stays white & same size as light (set in base rule); summary in the accent blue, lightened a touch */
+  html[data-theme="dark"] .header-right .summary { color:color-mix(in srgb, var(--accent), #fff 20%); }
+  /* dark mode: a slightly darker blue banner */
+  html[data-theme="dark"] .header-left { background:#3f54c4; }
+
+  /* ---- SIDEBAR ---- */
+  .sidebar{background:var(--sidebar-bg);padding:18px 18px;border-right:1px solid var(--rule);display:flex;flex-direction:column;gap:16px;}
+  .section-title{font-size:9px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);border-bottom:1.5px solid var(--accent);padding-bottom:4px;margin-bottom:9px;}
+  .contact-list{list-style:none;display:flex;flex-direction:column;gap:7px;}
+  .contact-list li{display:flex;align-items:flex-start;gap:8px;font-size:11.5px;line-height:1.35;word-break:break-word;}
+  .contact-list a{color:var(--accent);text-decoration:none;}
+  .dot{width:5px;height:5px;min-width:5px;background:var(--accent);margin-top:6px;flex-shrink:0;}
+  .skill-group{margin-bottom:10px;}
+  .skill-label{font-size:11px;font-weight:700;margin-bottom:5px;}
+  .skill-tags{display:flex;flex-wrap:wrap;gap:4px;}
+  .tag{font-size:10px;color:var(--mid);background:var(--tag-bg);padding:3px 8px;border-radius:2px;}
+  .edu-item{margin-bottom:10px;}
+  .edu-degree{font-size:11.5px;font-weight:600;line-height:1.3;}
+  .edu-inst{font-size:11px;color:var(--mid);margin-top:2px;}
+  .edu-year{font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);margin-top:2px;}
+  .lang-block{margin-bottom:9px;}
+  .lang-row{display:flex;justify-content:space-between;align-items:baseline;}
+  .lang-name{font-size:11.5px;font-weight:500;}
+  .lang-level{font-size:10.5px;color:var(--mid);}
+  .lang-bar{width:100%;height:3px;background:var(--rule);margin-top:5px;border-radius:2px;overflow:hidden;}
+  .lang-bar-fill{height:3px;background:var(--accent);border-radius:2px;}
+  .cert-list{list-style:none;display:flex;flex-direction:column;gap:6px;}
+  .cert-list li{font-size:11px;color:var(--mid);padding-left:12px;position:relative;line-height:1.4;}
+  .cert-list li::before{content:'—';position:absolute;left:0;color:var(--accent);}
+
+  /* ---- MAIN ---- */
+  .main{padding:18px 24px 24px;}
+  .main .section-title{margin-bottom:12px;}
+  .exp-item{padding-bottom:13px;margin-bottom:13px;border-bottom:1px solid var(--rule);}
+  .exp-item:last-child{border-bottom:none;margin-bottom:0;}
+  .exp-header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:3px;}
+  .exp-role{font-size:15px;font-weight:700;}
+  .exp-date{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--accent);white-space:nowrap;margin-left:auto;text-align:right;}
+  .exp-company{font-size:11px;font-weight:600;color:var(--company-color);margin-bottom:7px;}
+  .exp-bullets{list-style:none;display:flex;flex-direction:column;gap:5px;}
+  .exp-bullets li{display:flex;gap:9px;font-size:11.5px;color:var(--bullets-color);line-height:1.5;}
+  .exp-bullets li::before{content:'';display:block;width:4px;height:4px;min-width:4px;background:var(--ink);margin-top:7px;flex-shrink:0;}
+
+  /* fade animation on language swap */
+  .fade { animation: fade .35s ease; }
+  @keyframes fade { from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:none;} }
+
+  /* ---- MOBILE ---- */
+  @media (max-width:680px){
+    body{padding:58px 10px 70px;}
+    .sheet{grid-template-columns:1fr;}
+    .header{grid-template-columns:1fr;}
+    .header-left{justify-content:flex-start;}
+    .sidebar{border-right:none;border-bottom:1px solid var(--rule);}
+    .name-first,.name-last{font-size:23px;}
+    .header-right .title{font-size:12px;}
+    .header-right .summary{font-size:11.5px;}
+    .exp-role{font-size:14.5px;}
+  }
+
+  /* ---- SCROLL REVEAL ---- */
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease, transform .5s ease;}
+  .reveal.visible{opacity:1;transform:none;}
+
+  /* ---- REDUCED MOTION ---- */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+    .photo-outer:hover{ transform:none; }
+    .photo-outer.spin::after{ animation:none; }
+    .reveal{ opacity:1 !important; transform:none !important; }
+  }
+
+  /* ---- PRINT (clean CV, no floating controls, force light) ---- */
+  @page { size:A4; margin:0; }
+  @media print{
+    :root, html[data-theme="dark"]{
+      --ink:#111; --accent:#2E4BAF; --mid:#666; --rule:#DDD;
+      --sidebar-bg:#F3F3F3; --tag-bg:#E4E4E4; --dark:#181818;
+      --page-bg:#fff; --sheet-bg:#fff; --company-color:#555; --bullets-color:#2a2a2a;
+    }
+    body{background:#fff;padding:0;}
+    .lang-switch, .theme-toggle, .dl-toggle, .name-float{display:none !important;}
+    .sheet{box-shadow:none;max-width:none;}
+    html[data-theme="dark"] .header-right .title{color:#fff;}
+    html[data-theme="dark"] .header-right .summary{color:rgba(255,255,255,.92);}
+    .reveal{opacity:1 !important;transform:none !important;}
+    /* keep entries whole across page breaks */
+    .exp-item, .skill-group, .edu-item, .lang-block{break-inside:avoid;}
+    .cert-list li{break-inside:avoid;}
+    .section-title{break-after:avoid;}
+    /* compact so the whole CV fits a single A4 page edge-to-edge */
+    /* header: a touch bigger */
+    .header-left{padding:15px 16px;}
+    .header-right{padding:13px 22px;gap:5px;}
+    .header-right .title{font-size:13px;}
+    .header-right .summary{font-size:12.5px;line-height:1.4;}
+    /* main (experience): comfortable */
+    .main{padding:10px 20px;}
+    .main .section-title{margin-bottom:7px;}
+    .exp-item{padding-bottom:5px;margin-bottom:5px;}
+    .exp-header{margin-bottom:2px;}
+    .exp-bullets{gap:3px;}
+    .exp-bullets li{line-height:1.4;font-size:11px;}
+    .exp-company{margin-bottom:4px;}
+    .exp-role{font-size:14.5px;}
+    /* sidebar (tallest column): compress hard */
+    .sidebar{padding:11px 14px;gap:4px;}
+    .section-title{margin-bottom:3px;padding-bottom:2px;}
+    .contact-list{gap:3px;}
+    .skill-group{margin-bottom:2px;}
+    .skill-label{margin-bottom:2px;font-size:10.5px;}
+    .skill-tags{gap:3px;}
+    .tag{padding:2px 7px;font-size:9.5px;}
+    .edu-item{margin-bottom:3px;}
+    .edu-degree{font-size:11px;}
+    .lang-block{margin-bottom:3px;}
+    .lang-bar{margin-top:3px;}
+    .cert-list{gap:2px;}
+  }
+</style>
+</head>
+<body>
+
+<button class="dl-toggle" id="dlBtn" title="Descargar CV (PDF)" onclick="downloadCV()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+</button>
+
+<button class="theme-toggle" id="themeBtn" title="Tema" onclick="toggleTheme()">
+  <span id="themeIcon"></span>
+</button>
+
+<div class="lang-switch">
+  <button id="btn-es" class="active" onclick="setLang('es')">ES</button>
+  <button id="btn-en" onclick="setLang('en')">EN</button>
+</div>
+
+<div class="name-float" id="nameFloat">
+  <img id="nameFloatImg" alt="">
+  <span class="nf-name"></span>
+</div>
+
+<div class="sheet" id="sheet"></div>
+
+<script src="config.js"></script>
+<script>
+const PHOTO = "img/photo.jpg";
+const DATA = {"es": {"lang_label": "Currículum Vitae", "title": "Desarrollador Full Stack · Producto · Web", "summary": "Desarrollador Full Stack con más de 10 años construyendo productos web de punta a punta. Me muevo con comodidad tanto en el frontend como en el backend, con foco en escribir código mantenible, performante y bien testeado. Orientado a producto: entender el problema, iterar rápido y entregar valor. (Este es un CV de ejemplo: reemplazá su contenido editando el objeto DATA en CV-interactivo.html.)", "s_contact": "Contacto", "s_skills": "Habilidades", "s_edu": "Educación", "s_lang": "Idiomas", "s_cert": "Certificaciones", "s_exp": "Experiencia", "loc": "Ciudad, País", "skills": [["Frontend", ["JavaScript / TypeScript", "React", "HTML & CSS", "Accesibilidad"]], ["Backend", ["Node.js", "Python", "REST & APIs", "PostgreSQL"]], ["DevOps & Cloud", ["Docker", "CI/CD", "AWS", "Linux"]], ["Producto y Proceso", ["Metodologías Ágiles", "Discovery", "Testing", "Code Review"]]], "edu": [["Ingeniería en Informática", "Universidad de Ejemplo", "2012 – 2017"], ["Bootcamp Full Stack Web", "Academia Online", "2018"]], "langs": [["Español", "Nativo", 100], ["Inglés", "Profesional", 85]], "certs": ["AWS Certified Developer – Associate", "Professional Scrum Master I (PSM I)", "Diseño de APIs REST"], "exp": [["Desarrollador Full Stack Senior", "Empresa de Ejemplo · Plataforma SaaS", "2021 – Actualidad", ["Lideré el desarrollo de nuevas funcionalidades end-to-end, desde el diseño de la API hasta la interfaz, en una plataforma usada por miles de usuarios.", "Mejoré el rendimiento de la aplicación reduciendo los tiempos de carga, optimizando consultas a la base de datos y el bundle del frontend.", "Mentoreé a desarrolladores junior e introduje prácticas de code review y testing automatizado que elevaron la calidad del código."]], ["Desarrollador Full Stack", "Startup de Ejemplo", "2018 – 2021 · 3 años", ["Construí y mantuve servicios backend en Node.js y una interfaz en React para el producto principal de la startup.", "Diseñé e implementé APIs REST e integraciones con servicios de terceros (pagos, notificaciones, autenticación).", "Colaboré estrechamente con producto y diseño en ciclos cortos de discovery y entrega."]], ["Desarrollador Frontend", "Agencia Web de Ejemplo", "2017 – 2018 · 1 año", ["Desarrollé sitios web responsivos y accesibles para clientes de distintos rubros, cuidando la performance y el SEO.", "Traduje diseños a interfaces pixel-perfect con HTML, CSS y JavaScript modernos.", "Automaticé tareas de build y despliegue para acelerar la entrega de los proyectos."]]]}, "en": {"lang_label": "Resume", "title": "Full Stack Developer · Product · Web", "summary": "Full Stack Developer with 10+ years building web products end to end. Comfortable across both frontend and backend, focused on writing maintainable, performant, well-tested code. Product-minded: understand the problem, iterate fast, and ship value. (This is a sample CV: replace its content by editing the DATA object in CV-interactivo.html.)", "s_contact": "Contact", "s_skills": "Skills", "s_edu": "Education", "s_lang": "Languages", "s_cert": "Certifications", "s_exp": "Experience", "loc": "City, Country", "skills": [["Frontend", ["JavaScript / TypeScript", "React", "HTML & CSS", "Accessibility"]], ["Backend", ["Node.js", "Python", "REST & APIs", "PostgreSQL"]], ["DevOps & Cloud", ["Docker", "CI/CD", "AWS", "Linux"]], ["Product & Process", ["Agile", "Discovery", "Testing", "Code Review"]]], "edu": [["BSc in Computer Science", "Example University", "2012 – 2017"], ["Full Stack Web Bootcamp", "Online Academy", "2018"]], "langs": [["Spanish", "Native", 100], ["English", "Professional", 85]], "certs": ["AWS Certified Developer – Associate", "Professional Scrum Master I (PSM I)", "REST API Design"], "exp": [["Senior Full Stack Developer", "Example Company · SaaS Platform", "2021 – Present", ["Led end-to-end development of new features, from API design to the user interface, on a platform used by thousands of users.", "Improved application performance by reducing load times and optimizing database queries and the frontend bundle.", "Mentored junior developers and introduced code review and automated testing practices that raised code quality."]], ["Full Stack Developer", "Example Startup", "2018 – 2021 · 3 yrs", ["Built and maintained Node.js backend services and a React interface for the startup's core product.", "Designed and implemented REST APIs and integrations with third-party services (payments, notifications, authentication).", "Worked closely with product and design across short discovery and delivery cycles."]], ["Frontend Developer", "Example Web Agency", "2017 – 2018 · 1 yr", ["Developed responsive, accessible websites for clients across various industries, with attention to performance and SEO.", "Turned designs into pixel-perfect interfaces with modern HTML, CSS, and JavaScript.", "Automated build and deployment tasks to speed up project delivery."]]]}};
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+// language priority: ?lang= in URL > saved choice > device language > default 'en'
+let lang = (function(){
+  const u = new URLSearchParams(location.search).get('lang');
+  if(u === 'en' || u === 'es') return u;
+  const s = lsGet('lang');
+  if(s === 'en' || s === 'es') return s;
+  try{
+    const ls = navigator.languages || [navigator.language || ''];
+    for(const x of ls){ const v=(x||'').toLowerCase(); if(v.indexOf('es')===0) return 'es'; if(v.indexOf('en')===0) return 'en'; }
+  }catch(e){}
+  return 'en';  // Spanish only if the device prefers Spanish; English for everything else
+})();
+
+function render(){
+  const d = DATA[lang];
+  const S = window.SITE;
+  const skills = d.skills.map(g =>
+    `<div class="skill-group"><div class="skill-label">${g[0]}</div><div class="skill-tags">${g[1].map(t=>`<span class="tag">${t}</span>`).join('')}</div></div>`
+  ).join('');
+  const edu = d.edu.map(e =>
+    `<div class="edu-item"><div class="edu-degree">${e[0]}</div><div class="edu-inst">${e[1]}</div><div class="edu-year">${e[2]}</div></div>`
+  ).join('');
+  const langs = d.langs.map(l =>
+    `<div class="lang-block"><div class="lang-row"><span class="lang-name">${l[0]}</span><span class="lang-level">${l[1]}</span></div><div class="lang-bar"><div class="lang-bar-fill" style="width:${l[2]}%"></div></div></div>`
+  ).join('');
+  const certs = d.certs.map(c=>`<li>${c}</li>`).join('');
+  const exp = d.exp.map(x =>
+    `<div class="exp-item reveal"><div class="exp-header"><span class="exp-role">${x[0]}</span><span class="exp-date">${x[2]}</span></div><div class="exp-company">${x[1]}</div><ul class="exp-bullets">${x[3].map(b=>`<li>${b}</li>`).join('')}</ul></div>`
+  ).join('');
+
+  document.getElementById('sheet').innerHTML = `
+    <header class="header">
+      <div class="header-left">
+        <div class="photo-outer" onmouseenter="spinPhoto(this)"><div class="photo-wrap"><img src="${PHOTO}" alt="${S.fullName}"></div></div>
+        <div class="name-block"><div class="label">${d.lang_label}</div><div class="name-first">${S.firstName}</div><div class="name-last">${S.lastName}</div></div>
+      </div>
+      <div class="header-right"><div class="title">${d.title}</div><div class="summary">${d.summary}</div></div>
+    </header>
+    <aside class="sidebar">
+      <div class="reveal"><div class="section-title">${d.s_contact}</div><ul class="contact-list">
+        <li><span class="dot"></span>${d.loc}</li>
+        <li><span class="dot"></span><a href="mailto:${S.email}">${S.email}</a></li>
+        <li><span class="dot"></span><a href="${S.linkedin}" target="_blank">${S.linkedin.replace(/^https?:\/\/(www\.)?/,'')}</a></li>
+      </ul></div>
+      <div class="reveal"><div class="section-title">${d.s_skills}</div>${skills}</div>
+      <div class="reveal"><div class="section-title">${d.s_edu}</div>${edu}</div>
+      <div class="reveal"><div class="section-title">${d.s_lang}</div>${langs}</div>
+      <div class="reveal"><div class="section-title">${d.s_cert}</div><ul class="cert-list">${certs}</ul></div>
+    </aside>
+    <main class="main"><div class="section-title">${d.s_exp}</div>${exp}</main>`;
+
+  const sheet = document.getElementById('sheet');
+  sheet.classList.remove('fade'); void sheet.offsetWidth; sheet.classList.add('fade');
+  document.documentElement.lang = lang;
+  // spin the arc on every render (open + language change)
+  requestAnimationFrame(() => { spinPhoto(document.querySelector('.photo-outer')); revealOnScroll(); });
+}
+// fade sections in as they enter the viewport
+function revealOnScroll(){
+  const els = document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){ els.forEach(e => e.classList.add('visible')); return; }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(en => { if(en.isIntersecting){ en.target.classList.add('visible'); io.unobserve(en.target); } });
+  }, { rootMargin:'0px 0px -40px 0px', threshold:0.05 });
+  els.forEach(e => io.observe(e));
+}
+function spinPhoto(el) {
+  if (!el) return;
+  el.classList.remove('spin');
+  void el.offsetWidth; // force reflow so the browser restarts the animation
+  el.classList.add('spin');
+}
+function setLang(l, persist){
+  lang = l;
+  if(persist !== false) lsSet('lang', l);
+  document.getElementById('btn-es').classList.toggle('active', l==='es');
+  document.getElementById('btn-en').classList.toggle('active', l==='en');
+  render();
+}
+setLang(lang, false);  // honor URL ?lang= / saved choice / device language (don't persist until the user picks)
+
+// --- dark / light mode ---
+const SUN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--toggle-icon)"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/></svg>`;
+const MOON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--toggle-icon)"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 9 0 0 0 21 12.79z"/></svg>`;
+function applyThemeIcon() {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.getElementById('themeIcon').innerHTML = dark ? SUN : MOON;
+}
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  lsSet('theme', t);
+  applyThemeIcon();
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  setTheme(cur === 'dark' ? 'light' : 'dark');
+}
+// download the PDF for the active language, with a clean filename
+function downloadCV(){
+  const l = (lang === 'en') ? 'en' : 'es';
+  const a = document.createElement('a');
+  a.href = (l === 'en') ? 'cv/cv-en.pdf' : 'cv/cv-es.pdf';
+  a.download = window.SITE.fileBase + '-' + (l === 'en' ? 'EN' : 'ES') + '.pdf';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+// theme already applied by the early inline script (saved choice or OS preference); just sync the icon — don't persist until the user toggles
+applyThemeIcon();
+
+// floating name + photo follows the scroll (same idea as the lang switch)
+document.getElementById('nameFloatImg').src = PHOTO;
+document.getElementById('nameFloatImg').alt = window.SITE.fullName;
+document.querySelector('.name-float .nf-name').textContent = window.SITE.fullName;
+const nameFloat = document.getElementById('nameFloat');
+function onScroll(){
+  if (window.scrollY > 140) nameFloat.classList.add('visible');
+  else nameFloat.classList.remove('visible');
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# Sistema
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Editores
+.vscode/
+.idea/
+
+# Dependencias (no aplican a sitio estático, pero por si acaso)
+node_modules/
+
+# Borradores / locales
+*.local
+.env
+.env.*
+
+# NO ignorar los PDF del CV (descomentar si querés mantenerlos fuera del repo)
+# cv/cv-*.pdf
+
+# PDFs generados localmente desde el HTML (no publicar)
+CV-*.pdf

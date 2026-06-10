@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en" data-theme="light">
+<head>
+<script>/* one-time reset of legacy auto-saved prefs (old code persisted theme/lang on every load) so device detection works again */try{if(localStorage.getItem('prefv')!=='2'){localStorage.removeItem('theme');localStorage.removeItem('lang');localStorage.setItem('prefv','2');}}catch(e){}/* theme: saved choice first, else the device (OS) preference */try{var t=localStorage.getItem('theme');if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)t='dark';if(t==='dark')document.documentElement.setAttribute('data-theme','dark');else if(t==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- TEMPLATE: lo de abajo (título, Open Graph, favicon) es estático — los crawlers de previews no ejecutan JS.
+     El resto del contenido sale de config.js. Si cambiás tu nombre ahí, actualizá también estos valores. -->
+<!-- Titulo discreto: solo iniciales -->
+<title>AD | Portfolio</title>
+<link rel="canonical" href="https://tu-dominio.com">
+<!-- Open Graph / preview al compartir el link -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Alex Doe · Portfolio">
+<meta property="og:description" content="Toda mi información profesional en un solo lugar · Full Stack Developer">
+<meta property="og:url" content="https://tu-dominio.com">
+<meta property="og:image" content="https://tu-dominio.com/img/og-photo.jpg">
+<meta property="og:image:secure_url" content="https://tu-dominio.com/img/og-photo.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Alex Doe · Portfolio · Full Stack Developer">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_AR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Alex Doe · Portfolio">
+<meta name="twitter:description" content="Toda mi información profesional en un solo lugar · Full Stack Developer">
+<meta name="twitter:image" content="https://tu-dominio.com/img/og-photo.jpg">
+<!-- Favicon "AD" — archivos reales (bookmarks, home screen, etc.) -->
+<link rel="icon" href="icons/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+  :root{
+    --blue:#2e44c9;
+    --blue-hover:#2336a8;
+    --name:#2e44c9;
+    --card-bg:#c9c6c4;
+    --page-bg:#e9e9eb;
+    --grad-to:#c9c6c4;
+    --role-color:#1a1a1a;
+    --mid:#6b6b70;
+    --toggle-bg:rgba(255,255,255,.9);
+    --toggle-icon:#333;
+    --shadow:0 18px 50px rgba(0,0,0,.18);
+  }
+  html[data-theme="dark"]{
+    --blue:#4d6bff;
+    --blue-hover:#6079ff;
+    --name:#5e76ff;
+    --card-bg:#1c1c22;
+    --page-bg:#1e1e24;
+    --grad-to:#1c1c22;
+    --role-color:#e6e6e6;
+    --mid:#9a9aa3;
+    --toggle-bg:rgba(0,0,0,.5);
+    --toggle-icon:#f0f0f0;
+    --shadow:0 18px 50px rgba(0,0,0,.55);
+  }
+  .credit{margin-top:16px;text-align:center;font-size:11px;color:var(--mid);}
+  .credit a{color:var(--mid);text-decoration:underline;text-underline-offset:2px;}
+  .credit a:hover{color:var(--blue);}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--page-bg);
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px 12px;
+    transition:background .3s ease;
+  }
+  .card{
+    width:100%;max-width:420px;
+    background:var(--card-bg);
+    border-radius:26px;overflow:hidden;
+    box-shadow:var(--shadow);
+    position:relative;
+    transition:background .3s ease,box-shadow .3s ease;
+    animation:pageIn .7s cubic-bezier(.2,.7,.2,1) both;
+  }
+  @keyframes pageIn{ from{opacity:0;transform:translateY(16px) scale(.985);} to{opacity:1;transform:none;} }
+  /* staggered entrance: elements rise/fade in one after another on load.
+     'backwards' fill hides them during their delay but reverts to normal after,
+     so interactive elements keep their :hover transforms. */
+  @keyframes riseIn{ from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:none;} }
+  .hero, .info .name, .info .role, .info .anchor, .chat, .links .link, .foot{
+    animation:riseIn .5s cubic-bezier(.2,.7,.2,1) backwards;
+  }
+  .hero{ animation-delay:.10s; }
+  .info .name{ animation-delay:.20s; }
+  .info .role{ animation-delay:.27s; }
+  .info .anchor{ animation-delay:.34s; }
+  .chat{ animation-delay:.42s; }
+  .links .link:nth-child(1){ animation-delay:.50s; }
+  .links .link:nth-child(2){ animation-delay:.57s; }
+  .links .link:nth-child(3){ animation-delay:.64s; }
+  .foot{ animation-delay:.72s; }
+  /* Controles arriba */
+  .top-ctrl{
+    position:absolute;top:16px;left:16px;right:16px;
+    display:flex;justify-content:space-between;align-items:center;
+    z-index:3;
+  }
+  .ctrl-btn{
+    height:36px;min-width:36px;padding:0 10px;
+    background:var(--toggle-bg);
+    border:none;border-radius:18px;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    cursor:pointer;
+    backdrop-filter:blur(6px);
+    transition:transform .12s ease;
+  }
+  .ctrl-btn:hover{transform:scale(1.05);}
+  .ctrl-btn svg{width:17px;height:17px;}
+  .lang-btn{font-weight:800;font-size:12px;letter-spacing:.5px;color:var(--toggle-icon);}
+  .top-right{display:flex;gap:8px;}
+  .hero{position:relative;}
+  .hero img{width:100%;height:auto;display:block;object-fit:cover;}
+  .hero::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:42%;
+    background:linear-gradient(to bottom,transparent 0%,var(--grad-to) 100%);
+    transition:background .3s ease;
+  }
+  .info{position:relative;margin-top:-58px;text-align:center;padding:0 22px;z-index:2;}
+  .name{font-size:34px;font-weight:800;color:var(--name);letter-spacing:-.5px;transition:color .3s ease;text-shadow:0 2px 10px rgba(0,0,0,.18);}
+  .role{font-size:15px;color:var(--role-color);font-weight:600;margin-top:6px;transition:color .3s ease;}
+  .anchor{display:inline-flex;align-items:center;margin-top:11px;font-size:12px;font-weight:700;color:var(--blue);background:color-mix(in srgb, var(--blue) 10%, transparent);border:1px solid color-mix(in srgb, var(--blue) 28%, transparent);padding:4px 12px;border-radius:999px;letter-spacing:.01em;transition:color .3s ease,border-color .3s ease,background .3s ease;}
+  .links{padding:18px 18px 8px;display:flex;flex-direction:column;gap:13px;}
+  .link{
+    display:flex;align-items:center;
+    background:var(--blue);color:#fff;text-decoration:none;
+    border-radius:11px;padding:15px 16px;font-weight:700;font-size:14.5px;
+    transition:transform .12s ease,background .15s ease,box-shadow .2s ease;
+  }
+  .link:hover{background:var(--blue-hover);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.22);}
+  /* dark mode: luminescent glow on hover + inverted (glowing) name shadow */
+  html[data-theme="dark"] .link:hover{box-shadow:0 0 22px color-mix(in srgb, var(--blue) 60%, transparent);}
+  html[data-theme="dark"] .name{text-shadow:0 0 16px color-mix(in srgb, var(--name) 55%, transparent);}
+  .link .ico{width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .link .ico svg{width:20px;height:20px;fill:#fff;}
+  .link .label{flex:1;text-align:center;padding:0 8px;}
+  .link .dots{display:flex;align-items:center;justify-content:center;opacity:.8;flex-shrink:0;}
+  .link .dots svg{width:16px;height:16px;stroke:#fff;}
+  /* Fila inferior: PDF + QR + mail */
+  .foot{
+    display:flex;align-items:center;justify-content:center;gap:18px;
+    padding:14px 0 26px;
+  }
+  .foot-btn{
+    background:none;border:none;cursor:pointer;
+    width:44px;height:44px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .12s ease,background .2s ease;
+  }
+  .foot-btn:hover{transform:scale(1.12);background:var(--toggle-bg);}
+  .foot-btn svg{width:24px;height:24px;fill:var(--toggle-icon);}
+  .foot-btn .lbl{display:none;}
+  /* Modal QR */
+  .modal{
+    position:fixed;inset:0;background:rgba(0,0,0,.55);
+    display:none;align-items:center;justify-content:center;z-index:50;padding:20px;
+    backdrop-filter:blur(3px);
+  }
+  .modal.open{display:flex;}
+  .modal-box{
+    background:#fff;border-radius:20px;padding:28px;text-align:center;max-width:320px;width:100%;
+    box-shadow:0 20px 60px rgba(0,0,0,.4);
+  }
+  .modal-box h3{color:#1a1a1a;font-size:18px;margin-bottom:6px;}
+  .modal-box p{color:#666;font-size:13px;margin-bottom:18px;}
+  .modal-box #qrcode{display:flex;justify-content:center;margin-bottom:18px;}
+  .modal-box #qrcode canvas,.modal-box #qrcode img{border-radius:8px;}
+  .modal-actions{display:flex;flex-direction:column;gap:10px;}
+  .modal-actions button{
+    padding:12px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:14px;
+    background:var(--blue);color:#fff;transition:background .15s ease;
+  }
+  .modal-actions button:hover{background:var(--blue-hover);}
+  .modal-actions .secondary{background:#eee;color:#333;}
+  .modal-actions .secondary:hover{background:#ddd;}
+
+  /* respect users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important; }
+    .ctrl-btn:hover, .foot-btn:hover{ transform:none; }
+  }
+  /* ---- MINI CHAT (key questions), inside the card above the buttons ---- */
+  .chat{margin:32px 18px 4px;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.09);
+    border-radius:14px;padding:13px 14px;}
+  html[data-theme="dark"] .chat{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);}
+  .chat-msg{font-size:13px;line-height:1.5;color:var(--role-color);min-height:2.8em;text-align:left;
+    transition:color .3s ease;}
+  .chat-msg .caret{display:inline-block;width:2px;height:1em;background:var(--blue);margin-left:1px;
+    vertical-align:-2px;animation:cbk 1s steps(1) infinite;}
+  @keyframes cbk{50%{opacity:0;}}
+  .chat-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;}
+  .chip{border:1px solid rgba(0,0,0,.16);background:rgba(255,255,255,.45);color:var(--role-color);
+    font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;cursor:pointer;padding:7px 11px;
+    border-radius:999px;transition:transform .12s ease,background .2s ease,border-color .2s ease;}
+  .chip:hover{transform:translateY(-1px);border-color:var(--blue);}
+  html[data-theme="dark"] .chip{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#e6e6e6;}
+  .chip.active{background:var(--blue);color:#fff;border-color:transparent;}
+</style>
+</head>
+<body>
+  <div class="card">
+
+    <div class="top-ctrl">
+      <!-- Switch idioma ES / EN -->
+      <button class="ctrl-btn lang-btn" id="langBtn" title="Cambiar idioma" onclick="toggleLang()">
+        <span id="langLabel">EN</span>
+      </button>
+      <div class="top-right">
+        <!-- Toggle claro / oscuro -->
+        <button class="ctrl-btn" id="themeBtn" title="Tema" onclick="toggleTheme()">
+          <span id="themeIcon"></span>
+        </button>
+        <!-- Compartir -->
+        <button class="ctrl-btn" title="Compartir" onclick="sharePage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--toggle-icon)"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="hero">
+      <img src="img/photo.jpg" width="800" height="800" fetchpriority="high" alt="Alex Doe">
+    </div>
+
+    <div class="info">
+      <div class="name">Alex Doe</div>
+      <div class="role" id="role" data-es="Desarrollador Full Stack · Producto · Web" data-en="Full Stack Developer · Product · Web">Full Stack Developer · Product · Web</div>
+      <div class="anchor" data-es="+10 años construyendo software" data-en="10+ years building software">10+ years building software</div>
+    </div>
+
+    <div class="chat">
+      <div class="chat-msg" id="chatMsg"></div>
+      <div class="chat-chips" id="chatChips"></div>
+    </div>
+
+    <div class="links">
+      <a class="link" data-track="linkedin" href="https://www.linkedin.com/in/tu-usuario" target="_blank" rel="noopener noreferrer">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.22 8.02h4.56V24H.22V8.02zM8.34 8.02h4.37v2.18h.06c.61-1.15 2.1-2.36 4.32-2.36 4.62 0 5.47 3.04 5.47 6.99V24h-4.56v-7.27c0-1.73-.03-3.96-2.41-3.96-2.41 0-2.78 1.88-2.78 3.83V24H8.34V8.02z"/></svg></span>
+        <span class="label">LinkedIn</span>
+        <span class="dots" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="8 7 17 7 17 16"/></svg></span>
+      </a>
+
+      <a class="link" data-track="cv_interactivo" href="CV-interactivo.html" target="_blank" rel="noopener noreferrer">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></span>
+        <span class="label" id="cvLink" data-es="Mi currículum" data-en="My CV">Mi currículum</span>
+        <span class="dots" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="8 7 17 7 17 16"/></svg></span>
+      </a>
+
+      <a class="link" data-track="references" href="https://www.linkedin.com/in/tu-usuario" target="_blank" rel="noopener noreferrer">
+        <span class="ico"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM7 9h10v2H7V9zm6 5H7v-2h6v2zm4-6H7V6h10v2z"/></svg></span>
+        <span class="label" id="refLink" data-es="Referencias" data-en="References">Referencias</span>
+        <span class="dots" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="8 7 17 7 17 16"/></svg></span>
+      </a>
+    </div>
+
+    <div class="foot">
+      <!-- Descargar CV PDF -->
+      <button class="foot-btn" data-track="download_pdf" title="Descargar CV (PDF)" onclick="downloadCV()">
+        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+      </button>
+      <!-- QR + vCard -->
+      <button class="foot-btn" data-track="qr_open" title="QR / Contacto" onclick="openQR()">
+        <svg viewBox="0 0 24 24"><path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v-4zM13 3v8h8V3h-8zm6 6h-4V5h4v4zm-6 4h2v2h-2v-2zm2 2h2v2h-2v-2zm2-2h2v2h-2v-2zm-4 4h2v2h-2v-2zm2 2h2v2h-2v-2zm2-2h2v2h-2v-2zm2 2h2v2h-2v-2zm0-4h2v2h-2v-2z"/></svg>
+      </button>
+      <!-- Mail -->
+      <a class="foot-btn" data-track="email" href="#" title="Mail">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      </a>
+    </div>
+    <div class="credit" id="credit" hidden></div>
+  </div>
+
+  <!-- Modal QR / vCard -->
+  <div class="modal" id="qrModal" onclick="if(event.target===this)closeQR()">
+    <div class="modal-box">
+      <h3 id="qrTitle">Escaneá para visitar</h3>
+      <p id="qrSub">tu-dominio.com</p>
+      <div id="qrcode"></div>
+      <div class="modal-actions">
+        <button onclick="downloadVCard()" id="vcardBtn">Guardar contacto (vCard)</button>
+        <button class="secondary" onclick="closeQR()" id="closeBtn">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+<script src="config.js"></script>
+<script>
+/* Los datos del sitio viven en config.js — editá ESE archivo, no esto. */
+var SITE_URL = window.SITE.siteUrl;   // se usa para el QR / compartir
+var PDF_ES   = "cv/cv-es.pdf";
+var PDF_EN   = "cv/cv-en.pdf";
+
+/* Aplica al DOM la identidad definida en config.js */
+function applyIdentity(){
+  var S = window.SITE;
+  document.querySelector('.name').textContent = S.fullName;
+  var role = document.getElementById('role');
+  role.setAttribute('data-es', S.roleES); role.setAttribute('data-en', S.roleEN);
+  var anchor = document.querySelector('.anchor');
+  if(anchor){
+    if(S.anchorES || S.anchorEN){ anchor.setAttribute('data-es', S.anchorES); anchor.setAttribute('data-en', S.anchorEN); }
+    else { anchor.remove(); }
+  }
+  var li = document.querySelector('[data-track="linkedin"]');   if(li) li.href = S.linkedin;
+  var rf = document.querySelector('[data-track="references"]'); if(rf) rf.href = S.featured;
+  var mail = document.querySelector('[data-track="email"]');    if(mail) mail.href = 'mailto:' + S.email;
+  var qs = document.getElementById('qrSub');                    if(qs) qs.textContent = S.siteUrl.replace(/^https?:\/\/(www\.)?/, '');
+  // Crédito removible al template (config.js → showCredit)
+  var credit = document.getElementById('credit');
+  if(credit && S.showCredit){
+    credit.innerHTML = 'Built with <a href="https://github.com/julianbiggio/portfolio-kit" target="_blank" rel="noopener noreferrer">portfolio-kit</a>';
+    credit.hidden = false;
+  }
+}
+applyIdentity();
+
+/* ---------- TEMA claro/oscuro ---------- */
+var SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--toggle-icon);width:17px;height:17px"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/></svg>';
+var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--toggle-icon);width:17px;height:17px"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 9 0 0 0 21 12.79z"/></svg>';
+function applyThemeIcon(){
+  var t = document.documentElement.getAttribute('data-theme');
+  document.getElementById('themeIcon').innerHTML = (t==='dark') ? SUN : MOON;
+}
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function toggleTheme(){
+  var el = document.documentElement;
+  var next = el.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+  el.setAttribute('data-theme', next);
+  lsSet('theme', next);
+  applyThemeIcon();
+}
+applyThemeIcon();
+
+/* ---------- IDIOMA ES/EN ---------- */
+function setLang(lang, persist){
+  document.documentElement.setAttribute('data-lang', lang);
+  document.documentElement.setAttribute('lang', lang);
+  if(persist !== false) lsSet('lang', lang);
+  document.querySelectorAll('[data-es]').forEach(function(el){
+    el.textContent = el.getAttribute('data-'+lang);
+  });
+  // El boton muestra el idioma ACTUAL
+  document.getElementById('langLabel').textContent = (lang==='es') ? 'ES' : 'EN';
+  // El CV interactivo abre en el idioma activo
+  var cvLink = document.querySelector('[data-track="cv_interactivo"]');
+  if(cvLink){ cvLink.setAttribute('href', 'CV-interactivo.html?lang=' + lang); }
+  // textos del modal
+  if(lang==='en'){
+    document.getElementById('qrTitle').textContent='Scan to visit';
+    document.getElementById('vcardBtn').textContent='Save contact (vCard)';
+    document.getElementById('closeBtn').textContent='Close';
+  }else{
+    document.getElementById('qrTitle').textContent='Escaneá para visitar';
+    document.getElementById('vcardBtn').textContent='Guardar contacto (vCard)';
+    document.getElementById('closeBtn').textContent='Cerrar';
+  }
+}
+function toggleLang(){
+  var cur = document.documentElement.getAttribute('data-lang');
+  setLang(cur==='es' ? 'en' : 'es');
+}
+// device language: 'es' if the device prefers Spanish, else 'en'
+function deviceLang(){
+  try{
+    var ls = navigator.languages || [navigator.language || navigator.userLanguage || ''];
+    for(var i=0;i<ls.length;i++){ var v=(ls[i]||'').toLowerCase(); if(v.indexOf('es')===0) return 'es'; if(v.indexOf('en')===0) return 'en'; }
+  }catch(e){}
+  return 'en';
+}
+// saved choice wins; otherwise follow the device. Don't persist until the user picks.
+setLang(lsGet('lang') || deviceLang(), false);
+
+/* ---------- COMPARTIR ---------- */
+function sharePage(){
+  if(navigator.share){ navigator.share({title:window.SITE.fullName, url:SITE_URL}); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(SITE_URL); alert('Link copiado'); }
+}
+
+/* ---------- DESCARGAR CV PDF (según idioma activo) ---------- */
+function downloadCV(){
+  var lang = document.documentElement.getAttribute('data-lang');
+  var file = (lang==='en') ? PDF_EN : PDF_ES;
+  var a = document.createElement('a');
+  a.href = file; a.download = window.SITE.fileBase + '-' + (lang==='en' ? 'EN' : 'ES') + '.pdf';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- QR ---------- */
+function openQR(){
+  document.getElementById('qrModal').classList.add('open');
+  var box = document.getElementById('qrcode');
+  box.innerHTML='';
+  // Genera el QR cuando la libreria ya cargo
+  if(window.QRCode){
+    new QRCode(box, {text:SITE_URL, width:200, height:200, colorDark:"#2e44c9", colorLight:"#ffffff"});
+  }else{
+    box.innerHTML='<p style="color:#999">Cargando QR…</p>';
+  }
+}
+function closeQR(){ document.getElementById('qrModal').classList.remove('open'); }
+
+/* ---------- vCard (agregar a contactos) ---------- */
+function downloadVCard(){
+  // Reusa la foto que ya está en el DOM, reescalada y comprimida para que la .vcf quede liviana.
+  var photoLine = "";
+  try {
+    var img = document.querySelector('.hero img');
+    if (img && img.complete && img.naturalWidth) {
+      var size = 320;
+      var c = document.createElement('canvas');
+      c.width = size; c.height = size;
+      var s = Math.min(img.naturalWidth, img.naturalHeight);
+      var sx = (img.naturalWidth - s) / 2, sy = (img.naturalHeight - s) / 2;
+      c.getContext('2d').drawImage(img, sx, sy, s, s, 0, 0, size, size);
+      photoLine = "PHOTO;ENCODING=b;TYPE=JPEG:" + c.toDataURL('image/jpeg', 0.85).split(',')[1];
+    }
+  } catch(e){}
+  var S = window.SITE;
+  var noAccent = function(t){ return t.normalize('NFD').replace(/[\u0300-\u036f]/g,''); };
+  var fn = noAccent(S.firstName), ln = noAccent(S.lastName);   // sin acentos por compatibilidad de contactos
+  var lines = ["BEGIN:VCARD","VERSION:3.0","N:"+ln+";"+fn+";;;","FN:"+fn+" "+ln,
+               "TITLE:"+S.vcardTitle,"EMAIL;TYPE=INTERNET:"+S.email,
+               "URL:"+SITE_URL];
+  if (photoLine) lines.push(photoLine);
+  lines.push("END:VCARD");
+  var blob = new Blob([lines.join("\r\n")], {type:"text/vcard"});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = fn + "_" + ln + ".vcf";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* =======================================================================
+   CLICK-TRACKING POR BOTÓN  (preparado y comentado)
+   -----------------------------------------------------------------------
+   Cada elemento con data-track="..." dispara un evento al hacer click.
+   Para ACTIVARLO solo tenés que sumar tu script de analytics:
+
+   OPCIÓN A — Cloudflare Web Analytics (visitas, automático):
+   Pegá en el <head> el snippet que te da Cloudflare. Las VISITAS se cuentan
+   solas; no requiere nada acá.
+
+   OPCIÓN B — Umami (open-source, eventos por botón):
+   1) Agregá en el <head>:
+      <script defer src="https://TU-UMAMI/script.js"
+              data-website-id="TU-ID"><\/script>
+   2) Descomentá la línea umami de abajo.
+
+   OPCIÓN C — Plausible:
+   1) Agregá en el <head>:
+      <script defer data-domain="tu-dominio.com"
+              src="https://plausible.io/js/script.js"><\/script>
+   2) Descomentá la línea plausible de abajo.
+   ======================================================================= */
+document.querySelectorAll('[data-track]').forEach(function(el){
+  el.addEventListener('click', function(){
+    var name = el.getAttribute('data-track');
+    // ---- Descomentá UNA según el servicio que uses ----
+    // if(window.umami) umami.track('click_'+name);
+    // if(window.plausible) plausible('click_'+name);
+    console.log('[track] click:', name);  // visible en la consola para probar
+  });
+});
+
+/* ---------- MINI CHAT: preguntas clave (texto) ---------- */
+var CHAT = {
+  es: {
+    greet: window.SITE.chatGreetES,
+    chips: [
+      { q:"¿A qué te dedicás?", a:"Soy desarrollador full stack: construyo productos web de punta a punta, del backend a la interfaz. Me importa el código mantenible y pensar en el producto, no solo en la feature." },
+      { q:"¿Qué stack usás?", a:"JavaScript/TypeScript en todo el stack: React en el frontend y Node.js en el backend, con Python para automatizaciones y PostgreSQL en datos. Pero el stack es una herramienta, no una religión: elijo el que mejor resuelva el problema." },
+      { q:"¿Cómo trabajás?", a:"En ciclos cortos, con foco en entregar valor seguido: code review, testing automatizado y mejora continua. Me gusta entender el problema del usuario antes de escribir una línea." },
+      { q:"Tu proyecto más importante", a:"Llevar una plataforma SaaS de un MVP a miles de usuarios: rediseñé la API, mejoré la performance y armé el pipeline de CI/CD. Aprendí que escalar es tanto de arquitectura como de proceso." },
+      { q:"¿Qué te apasiona?", a:"Construir cosas que la gente usa. Me prende resolver problemas reales, aprender tecnología nueva y dejar el código mejor de como lo encontré." }
+    ]
+  },
+  en: {
+    greet: window.SITE.chatGreetEN,
+    chips: [
+      { q:"What do you do?", a:"I'm a full stack developer: I build web products end to end, from the backend to the interface. I care about maintainable code and thinking about the product, not just the feature." },
+      { q:"What's your stack?", a:"JavaScript/TypeScript across the stack: React on the frontend and Node.js on the backend, with Python for automation and PostgreSQL for data. But the stack is a tool, not a religion: I pick whatever best solves the problem." },
+      { q:"How you work", a:"In short cycles, focused on shipping value often: code review, automated testing and continuous improvement. I like to understand the user's problem before writing a line." },
+      { q:"Your most important project", a:"Taking a SaaS platform from an MVP to thousands of users: I redesigned the API, improved performance and set up the CI/CD pipeline. I learned that scaling is as much about process as architecture." },
+      { q:"What are you passionate about?", a:"Building things people use. I get fired up solving real problems, learning new tech, and leaving the code better than I found it." }
+    ]
+  }
+};
+var chatMsg = document.getElementById('chatMsg');
+var chatChips = document.getElementById('chatChips');
+var chatTyper = null;
+function chatLang(){ return document.documentElement.getAttribute('data-lang') === 'es' ? 'es' : 'en'; }
+function typeMsg(text){
+  clearInterval(chatTyper);
+  chatMsg.textContent = '';
+  var caret = document.createElement('span'); caret.className = 'caret';
+  chatMsg.appendChild(caret);
+  var i = 0, step = Math.max(12, Math.min(26, 1700 / text.length));
+  chatTyper = setInterval(function(){
+    i++; chatMsg.textContent = text.slice(0, i);
+    if(i < text.length){ chatMsg.appendChild(caret); } else { clearInterval(chatTyper); }
+  }, step);
+}
+function renderChat(){
+  var d = CHAT[chatLang()];
+  typeMsg(d.greet);
+  chatChips.innerHTML = '';
+  d.chips.forEach(function(c){
+    var btn = document.createElement('button');
+    btn.className = 'chip'; btn.type = 'button'; btn.textContent = c.q;
+    btn.addEventListener('click', function(){
+      chatChips.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('active'); });
+      btn.classList.add('active');
+      typeMsg(c.a);
+    });
+    chatChips.appendChild(btn);
+  });
+}
+if(chatMsg && chatChips){ renderChat(); }
+
+/* refresh the chat when the language changes */
+var _setLangOrig = setLang;
+setLang = function(l){ _setLangOrig(l); if(chatMsg && chatChips){ renderChat(); } };
+</script>
+
+<!-- Librería QR alojada localmente (qrcodejs 1.0.0) — sin dependencias externas: se sirve desde el mismo edge de Cloudflare. -->
+<script src="lib/qrcode.min.js"></script>
+</body>
+</html>
