@@ -222,7 +222,108 @@ The site is **public and indexable** — meant to be promoted and show up in sea
 
 ## 11. 🤖 AI editing guide
 
-Internal tooling documentation, kept in **Spanish only**. See [🤖 Guía para una IA](#11--guía-para-una-ia).
+Project conventions and workflow, so an AI can pick up edits with no prior context.
+
+### 🌿 Working branch
+
+- **`main`** → production (`your-domain.com`); every push redeploys in ~1 min.
+- **`dev`** (or any feature branch) → preview at `<branch>.<your-project>.pages.dev` (Cloudflare generates a URL per branch).
+- Flow: edit on `dev` → PR to `main` → **merge commit (no squash)** → redeploy.
+
+> **Squash-merge:** squashing a diverged branch can produce a diff that doesn't apply changes already present in both branches. Always use a merge commit for dev→main.
+
+### 🌈 Colors
+
+All in CSS variables inside each HTML file (no external `.css`).
+
+| Variable | Light theme | Dark theme |
+|---|---|---|
+| `--blue` / `--accent` | `#2e44c9` | `#5e76ff` |
+| `--blue-hover` | `#2336a8` | `#6079ff` |
+| `--name` | `#2e44c9` | `#5e76ff` |
+
+To change the accent: `:root { --blue:... }` in `index.html` and `:root { --accent:... }` in `CV-interactivo.html`.
+
+### 🌓 Theme and language (detection + persistence)
+
+Rule: **the user's choice wins; if they didn't choose, the device is used; it only persists on a manual choice.**
+
+- **Theme** (`data-theme="dark"`): an inline `<script>` in `<head>` (before painting, avoids flash) resolves `localStorage.theme` → otherwise `matchMedia('(prefers-color-scheme: dark)')`. Saves only on tapping ☀️/🌙.
+- **Language** (`data-lang`, `data-es`/`data-en` texts): priority in the CV `?lang=` → `localStorage.lang` → device → default; in the landing without `?lang=`. Spanish only if the device prefers Spanish; English for the rest. `setLang(lang, persist)` saves only if `persist !== false` (on load it's called with `false`).
+- **`prefv` migration:** an old version persisted `theme`/`lang` on every load. At the start of the `<script>` there's a one-time migration: if `localStorage.prefv !== '2'`, it clears legacy `theme`/`lang` and sets `prefv='2'`. If you change the defaults, **bump the version number**. Keys: `theme`, `lang`, `prefv`.
+
+### 🪪 Centralized identity (`config.js`)
+
+All identity lives in `config.js` (`window.SITE = {…}`). Both pages load it with `<script src>` **before** their main script:
+
+- **`index.html`:** `applyIdentity()` sets the name, the `data-es/en` of role/anchor, and the buttons' `href`. The chat greeting, `navigator.share`, the vCard, and the PDF name also read from `window.SITE`.
+- **`CV-interactivo.html`:** `render()` uses `const S = window.SITE` for name, photo (alt), email and LinkedIn in the contact block, the chip, and the PDF.
+
+**Rule:** new personal data → `config.js`, never hardcoded. The only static bits (read by crawlers/browser): `<title>`, `<link rel="canonical">`, `og:*`/`twitter:*` metas, and the favicons — marked with a `TEMPLATE:` comment in each `<head>`.
+
+### 🌐 i18n
+
+- **`index.html`:** every translatable element carries `data-es`/`data-en`; `setLang(lang, persist)` walks the DOM, adjusts the ES/EN button, the CV link (`?lang=`), and the modal.
+- **`CV-interactivo.html`:** all content is in the `DATA` object (keys `es`/`en`); `render()` generates the HTML by `lang`. To edit the CV, touch `DATA` directly.
+- **Mini-chat:** questions/answers in the `CHAT` object (`es`/`en`, `chips` array of `{q, a}`). It's conversational, not a dump of the CV.
+
+### 💅 CSS
+
+Inline in the `<head>`'s `<style>`, in commented sections: (1) variables, (2) reset/base, (3) components, (4) responsive, (5) animations, (6) print. Don't create external `.css` — the project is monolithic on purpose.
+
+### 📄 Downloadable PDFs (`cv/cv-es.pdf` / `cv/cv-en.pdf`)
+
+Generated with Puppeteer (Node + headless Chromium) from `CV-interactivo.html`. The script lives at `/tmp/gen_pdf.js` (not versioned):
+
+```bash
+npm install puppeteer      # once
+node /tmp/gen_pdf.js        # generates both PDFs
+```
+
+It injects `?lang=es|en` and generates A4 with no margins; the `@media print` CSS already fits everything on one page. If the CV changes, regenerate and commit the PDFs.
+
+### ⚡ Performance and assets (don't break — the smoke test checks this)
+
+- **External photo, NOT inline base64.** `img/photo.jpg` is used by landing and CV; embedding it as base64 bloats the HTML. The hero `<img>` carries `width`/`height` and `.hero img` **must** have `height:auto` (otherwise it stretches).
+- **QR:** `lib/qrcode.min.js` local, no CDN.
+- **Fonts (CV only):** DM Sans/Mono with `display=swap` + `preconnect`. The landing uses system fonts.
+- **Open Graph:** `img/og-photo.jpg` (1200×630) via `python3 tools/gen_og.py`. If it changes, **rename the file** and update the metas → it breaks WhatsApp/social caches (they cache by URL); sharing `…/?v=N` also forces a re-fetch.
+- **vCard:** built on the client from `config.js`; embedded photo rescaled to 320px; name without accents (`noAccent()`).
+- **Favicon:** real files in `icons/` via `gen_icons.py`. Titles `AD | Portfolio` / `AD | Curriculum`: static in the `<head>`.
+- **Mobile:** `body` uses `min-height:100dvh` (not `100vh`).
+
+### 🔎 SEO (robots, sitemap, canonical)
+
+Indexable. Three places must stay consistent (the smoke test checks them): `robots.txt` (`Allow: /` + `Disallow: /cv/` + `Sitemap:`), `sitemap.xml` (add new pages) and `<link rel="canonical">` in each HTML. If the domain/pages change, update all absolute URLs.
+
+### 🚫 Edit with care
+
+- `robots.txt` / `sitemap.xml`: SEO (see [🔎 SEO and indexing](#9--seo-and-indexing)). `Allow: /` enables indexing; `Disallow: /cv/` keeps the PDFs out of results.
+- `_headers`: security — don't change without a specific requirement.
+- `functions/_middleware.js`: 404 for `README.md`, `.gitignore`, `/test/`, `/.claude/`, `/tools/`. If you add tooling, add it to `BLOCKED` (and its check in `test/checks.mjs`). **Exceptions** (not blocked): `config.js`, `robots.txt`, `sitemap.xml`.
+
+### ✍️ Commits
+
+`feat:` · `fix:` · `update:` · `style:` + short description.
+
+### ✅ Smoke tests
+
+Dependency-free suite (Node) that catches regressions (base64 photo, stretched hero, refs to deleted files, broken theme/language detection, invalid inline JS, missing assets, hardcoded email, SEO config):
+
+```bash
+node test/checks.mjs   # exit ≠ 0 if something fails
+```
+
+It runs on its own at session start via the hook (`.claude/hooks/session-start.sh`). When adding a check, add it to `test/checks.mjs`.
+
+### ☑️ Checklist before merging to main
+
+1. `node test/checks.mjs` passes.
+2. Branch preview OK.
+3. Dark **and** light mode.
+4. Mobile (especially iOS Safari).
+5. If the CV changed, regenerate the PDFs.
+6. Merge commit (no squash).
 
 ---
 
@@ -448,7 +549,7 @@ El sitio es **público e indexable** — pensado para promocionarse y aparecer e
 
 ## 11. 🤖 Guía para una IA
 
-Convenciones y flujo del proyecto, para que una IA retome ediciones sin contexto previo. Es tooling interno; se mantiene **solo en español**.
+Convenciones y flujo del proyecto, para que una IA retome ediciones sin contexto previo.
 
 ### 🌿 Rama de trabajo
 
